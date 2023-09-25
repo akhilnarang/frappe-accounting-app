@@ -1,22 +1,31 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2023-09-25 16:22:11.545780",
+ "creation": "2023-09-25 16:32:58.617697",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "entry_type",
+  "item",
+  "source_warehouse",
   "target_warehouse",
-  "items"
+  "quantity"
  ],
  "fields": [
   {
-   "fieldname": "entry_type",
-   "fieldtype": "Select",
-   "label": "Entry Type",
-   "options": "Receipt\nConsume\nTransfer"
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "source_warehouse",
+   "fieldtype": "Link",
+   "label": "Source Warehouse",
+   "options": "Warehouse"
   },
   {
    "fieldname": "target_warehouse",
@@ -27,20 +36,21 @@
    "reqd": 1
   },
   {
-   "fieldname": "items",
-   "fieldtype": "Table",
-   "label": "Items",
-   "options": "StockEntryTableItem",
+   "fieldname": "quantity",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Quantity",
+   "non_negative": 1,
    "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-09-25 16:37:38.661073",
+ "modified": "2023-09-25 16:36:05.019684",
  "modified_by": "Administrator",
  "module": "Accounting",
- "name": "Stock Entry",
+ "name": "StockEntryTableItem",
  "owner": "Administrator",
  "permissions": [],
  "sort_field": "modified",
