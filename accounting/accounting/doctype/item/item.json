@@ -9,22 +9,13 @@
  "engine": "InnoDB",
  "field_order": [
   "item_name",
-  "image",
-  "available_quantity"
+  "image"
  ],
  "fields": [
   {
    "fieldname": "image",
    "fieldtype": "Attach Image",
    "label": "Image"
-  },
-  {
-   "fieldname": "available_quantity",
-   "fieldtype": "Int",
-   "in_list_view": 1,
-   "label": "Available Quantity",
-   "non_negative": 1,
-   "reqd": 1
   },
   {
    "fieldname": "item_name",
@@ -36,7 +27,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-09-25 16:58:53.971383",
+ "modified": "2023-09-26 12:18:02.478693",
  "modified_by": "Administrator",
  "module": "Accounting",
  "name": "Item",
