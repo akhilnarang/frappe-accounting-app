@@ -50,7 +50,7 @@
  "modified": "2023-09-25 16:36:05.019684",
  "modified_by": "Administrator",
  "module": "Accounting",
- "name": "StockEntryTableItem",
+ "name": "Stock Entry Table Item",
  "owner": "Administrator",
  "permissions": [],
  "sort_field": "modified",
