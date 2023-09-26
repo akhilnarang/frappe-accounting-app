@@ -10,7 +10,8 @@
   "item",
   "source_warehouse",
   "target_warehouse",
-  "quantity"
+  "quantity",
+  "rate"
  ],
  "fields": [
   {
@@ -32,8 +33,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Target Warehouse",
-   "options": "Warehouse",
-   "reqd": 1
+   "options": "Warehouse"
   },
   {
    "fieldname": "quantity",
@@ -42,12 +42,18 @@
    "label": "Quantity",
    "non_negative": 1,
    "reqd": 1
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Int",
+   "label": "Rate",
+   "non_negative": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-09-25 16:36:05.019684",
+ "modified": "2023-09-26 12:25:37.208366",
  "modified_by": "Administrator",
  "module": "Accounting",
  "name": "Stock Entry Table Item",
