@@ -10,7 +10,8 @@
   "item",
   "warehouse",
   "entry_time",
-  "quantity"
+  "quantity",
+  "rate"
  ],
  "fields": [
   {
@@ -42,11 +43,18 @@
    "in_list_view": 1,
    "label": "Quantity",
    "reqd": 1
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Int",
+   "label": "Rate",
+   "non_negative": 1,
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-09-26 16:50:46.016785",
+ "modified": "2023-09-27 12:13:38.255261",
  "modified_by": "Administrator",
  "module": "Accounting",
  "name": "Stock Ledger Entry",
