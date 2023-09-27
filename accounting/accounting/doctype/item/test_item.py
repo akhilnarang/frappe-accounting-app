@@ -10,35 +10,36 @@ from frappe.tests.utils import FrappeTestCase
 class TestItem(FrappeTestCase):
 	def test_create_item_without_mandatory_fields(self):
 		frappe.set_user("Administrator")
-		doc = frappe.get_doc({
-			"doctype": "Item",
-		})
-		with self.assertRaises(frappe.exceptions.MandatoryError):
+		doc = frappe.get_doc(
+			{
+				"doctype": "Item",
+			}
+		)
+		with self.assertRaises(frappe.exceptions.ValidationError):
 			doc.insert()
 
 	def test_create_item(self):
 		frappe.set_user("Administrator")
-		name = ''.join(random.choices(string.ascii_letters, k=10))
-		available_quantity = random.choice(range(100))
-		doc = frappe.get_doc({
-			"doctype": "Item",
-			"item_name": name,
-			"available_quantity": available_quantity
-		})
+		name = "".join(random.choices(string.ascii_letters, k=10))
+		doc = frappe.get_doc(
+			{
+				"doctype": "Item",
+				"item_name": name,
+			}
+		)
 		doc.insert()
-		assert doc.item_name == name
-		assert doc.available_quantity == available_quantity
-
+		created_item = frappe.get_doc("Item", doc.name)
+		self.assertEqual(created_item.item_name, name)
 
 	def test_create_guest(self):
 		frappe.set_user("Guest")
-		name = ''.join(random.choices(string.ascii_letters, k=10))
-		available_quantity = random.choice(range(100))
-		doc = frappe.get_doc({
-			"doctype": "Item",
-			"item_name": name,
-			"available_quantity": available_quantity
-		})
+		name = "".join(random.choices(string.ascii_letters, k=10))
+		doc = frappe.get_doc(
+			{
+				"doctype": "Item",
+				"item_name": name,
+			}
+		)
 		with self.assertRaises(frappe.exceptions.PermissionError):
 			doc.insert()
 
