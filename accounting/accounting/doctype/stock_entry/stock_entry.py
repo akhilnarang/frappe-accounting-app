@@ -5,6 +5,7 @@ import frappe
 from accounting.accounting.doctype.stock_entry_table_item.stock_entry_table_item import (
 	StockEntryTableItem,
 )
+from frappe import cint
 from frappe.model.document import Document
 
 
@@ -45,7 +46,7 @@ class StockEntry(Document):
 		)
 
 		# Ensure that the warehouse has enough stock
-		if stock is None or item.quantity > stock:
+		if item.quantity > cint(stock):
 			frappe.throw(
 				f"Not enough stock in the warehouse - available: {stock or 0}, requested: {item.quantity}"
 			)
@@ -75,7 +76,7 @@ class StockEntry(Document):
 		)
 
 		# Ensure that the warehouse has enough stock
-		if stock is None or item.quantity > stock:
+		if item.quantity > cint(stock):
 			frappe.throw(
 				f"Not enough stock in the warehouse - available: {stock or 0}, requested: {item.quantity}"
 			)
