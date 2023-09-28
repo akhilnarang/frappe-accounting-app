@@ -1,6 +1,5 @@
 # Copyright (c) 2023, Akhil and contributors
 # For license information, please see license.txt
-from datetime import datetime
 
 import frappe
 from accounting.accounting.doctype.stock_entry_table_item.stock_entry_table_item import (
@@ -61,6 +60,9 @@ class StockEntry(Document):
 			frappe.throw("Source Warehouse is not allowed for transfer")
 		elif self.source_warehouse:
 			item.source_warehouse = self.source_warehouse
+
+		if item.source_warehouse == item.target_warehouse:
+			frappe.throw("Source and Target Warehouse cannot be the same")
 
 		# Fetch the stock for the given item in the given warehouse
 		stock = frappe.db.get_value(
