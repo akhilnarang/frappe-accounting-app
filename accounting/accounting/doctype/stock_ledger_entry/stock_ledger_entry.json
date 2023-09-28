@@ -39,7 +39,7 @@
   },
   {
    "fieldname": "quantity",
-   "fieldtype": "Int",
+   "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Quantity",
    "reqd": 1
@@ -54,7 +54,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-09-28 17:39:52.895305",
+ "modified": "2023-09-29 11:40:03.305798",
  "modified_by": "Administrator",
  "module": "Accounting",
  "name": "Stock Ledger Entry",

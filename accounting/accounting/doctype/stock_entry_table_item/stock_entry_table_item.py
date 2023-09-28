@@ -18,7 +18,7 @@ class StockEntryTableItem(Document):
 		parent: DF.Data
 		parentfield: DF.Data
 		parenttype: DF.Data
-		quantity: DF.Int
+		quantity: DF.Float
 		rate: DF.Int
 		source_warehouse: DF.Link | None
 		target_warehouse: DF.Link | None

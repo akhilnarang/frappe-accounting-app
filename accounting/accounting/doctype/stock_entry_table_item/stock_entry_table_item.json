@@ -37,7 +37,7 @@
   },
   {
    "fieldname": "quantity",
-   "fieldtype": "Int",
+   "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Quantity",
    "non_negative": 1,
@@ -54,7 +54,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-09-28 17:39:47.346173",
+ "modified": "2023-09-28 18:31:07.566279",
  "modified_by": "Administrator",
  "module": "Accounting",
  "name": "Stock Entry Table Item",

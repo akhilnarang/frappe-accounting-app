@@ -5,6 +5,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 import frappe
+from frappe.utils import flt
 
 
 class Filters(BaseModel):
@@ -34,31 +35,31 @@ def execute(incoming_filters: dict) -> tuple[list[dict], list[dict]]:
         {
             "fieldname": "opening_stock",
             "label": "Opening Stock",
-            "fieldtype": "Int",
+            "fieldtype": "Float",
             "width": 200,
         },
         {
             "fieldname": "incoming_stock",
             "label": "Incoming Stock",
-            "fieldtype": "Int",
+            "fieldtype": "Float",
             "width": 200,
         },
         {
             "fieldname": "outgoing_stock",
             "label": "Outgoing Stock",
-            "fieldtype": "Int",
+            "fieldtype": "Float",
             "width": 200,
         },
         {
             "fieldname": "closing_stock",
             "label": "Closing Stock",
-            "fieldtype": "Int",
+            "fieldtype": "Float",
             "width": 200,
         },
         {
             "fieldname": "valuation_rate",
             "label": "Valuation Rate",
-            "fieldtype": "Int",
+            "fieldtype": "Float",
             "width": 200,
         },
     ]
@@ -85,9 +86,7 @@ def execute(incoming_filters: dict) -> tuple[list[dict], list[dict]]:
 
     response: list[dict] = []
 
-    item_warehouse_pairs: list[dict] = frappe.db.sql(
-        query_string, query_filters, as_dict=True
-    )
+    item_warehouse_pairs: list[dict] = frappe.db.sql(query_string, query_filters, as_dict=True)
     for entry in item_warehouse_pairs:
         # Get opening stock
         if opening_stock := frappe.db.sql(
@@ -188,11 +187,11 @@ def execute(incoming_filters: dict) -> tuple[list[dict], list[dict]]:
             {
                 "item": entry["item"],
                 "warehouse": entry["warehouse"],
-                "opening_stock": opening_stock or 0,
-                "incoming_stock": incoming_stock or 0,
-                "outgoing_stock": outgoing_stock or 0,
-                "closing_stock": closing_stock or 0,
-                "valuation_rate": valuation_rate or 0,
+                "opening_stock": flt(opening_stock),
+                "incoming_stock": flt(incoming_stock),
+                "outgoing_stock": abs(flt(outgoing_stock)),
+                "closing_stock": flt(closing_stock),
+                "valuation_rate": flt(valuation_rate),
             }
         )
     return columns, response

@@ -16,7 +16,7 @@ class StockLedgerEntry(Document):
 
 		entry_time: DF.Datetime
 		item: DF.Link
-		quantity: DF.Int
+		quantity: DF.Float
 		rate: DF.Int
 		warehouse: DF.Link
 	# end: auto-generated types
