@@ -219,3 +219,6 @@ app_license = "mit"
 # auth_hooks = [
 #	"accounting.auth.validate"
 # ]
+
+# Enable experimental type-hint generation
+export_python_type_annotations = True
