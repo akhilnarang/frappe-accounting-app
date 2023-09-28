@@ -97,14 +97,14 @@ class StockEntry(Document):
 				"doctype": "Stock Ledger Entry",
 				"item": item,
 				"warehouse": warehouse,
-				"entry_time": self.now,
+				"entry_time": self.current_time,
 				"quantity": quantity,
 				"rate": rate,
 			}
 		).insert()
 
 	def before_save(self):
-		self.now = frappe.utils.now_datetime()
+		self.current_time = frappe.utils.now_datetime()
 		match self.entry_type:
 			case "Receipt":
 				for item in self.items:
