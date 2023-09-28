@@ -10,6 +10,20 @@ from frappe.model.document import Document
 
 
 class StockEntry(Document):
+	# begin: auto-generated types
+	# This code is auto-generated. Do not modify anything in this block.
+
+	from typing import TYPE_CHECKING
+
+	if TYPE_CHECKING:
+		from accounting.accounting.doctype.stock_entry_table_item.stock_entry_table_item import StockEntryTableItem
+		from frappe.types import DF
+
+		entry_type: DF.Literal['Receipt', 'Consume', 'Transfer']
+		items: DF.Table[StockEntryTableItem]
+		source_warehouse: DF.Link | None
+		target_warehouse: DF.Link | None
+	# end: auto-generated types
 	def validate_item_metadata(self, item: StockEntryTableItem):
 		if item.quantity < 1:
 			frappe.throw("Quantity needs to be a positive number")
