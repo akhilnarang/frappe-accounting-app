@@ -28,8 +28,8 @@ class TestStockLedgerEntry(FrappeTestCase):
             source_warehouse=None,
             target_warehouse=warehouse_1.name,
         )
-        doc = frappe.db.get(
-            "Stock Ledger Entry", {"item": item.name, "warehouse": warehouse_1.name}
+        doc = frappe.db.get_value(
+            "Stock Ledger Entry", {"item": item.name, "warehouse": warehouse_1.name}, "*"
         )
         self.assertEqual(doc.item, item.name)
         self.assertEqual(doc.warehouse, warehouse_1.name)
@@ -50,8 +50,10 @@ class TestStockLedgerEntry(FrappeTestCase):
             target_warehouse=warehouse_2.name,
         )
 
-        doc = frappe.db.get(
-            "Stock Ledger Entry", {"item": item.name, "warehouse": warehouse_2.name}
+        doc = frappe.db.get_value(
+            "Stock Ledger Entry",
+            {"item": item.name, "warehouse": warehouse_2.name},
+            "*",
         )
         self.assertEqual(doc.item, item.name)
         self.assertEqual(doc.warehouse, warehouse_2.name)

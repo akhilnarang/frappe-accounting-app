@@ -7,22 +7,16 @@ from frappe.tests.utils import FrappeTestCase
 
 
 def create_random_item(name: str | None = None):
-	return frappe.get_doc(
-		{
-			"doctype": "Item",
-			"item_name": name or generate_random_string(),
-		}
+	return frappe.new_doc(
+		"Item",
+		item_name=name or generate_random_string(),
 	).insert()
 
 
 class TestItem(FrappeTestCase):
 	def test_create_item_without_mandatory_fields(self):
 		frappe.set_user("Administrator")
-		doc = frappe.get_doc(
-			{
-				"doctype": "Item",
-			}
-		)
+		doc = frappe.new_doc("Item")
 		with self.assertRaises(frappe.exceptions.ValidationError):
 			doc.insert()
 
@@ -30,8 +24,8 @@ class TestItem(FrappeTestCase):
 		frappe.set_user("Administrator")
 		name = generate_random_string()
 		doc = create_random_item(name)
-		created_doc = frappe.db.get("Item", {"item_name": name})
-		self.assertEqual(doc.name, created_doc.name)
+		created_doc_name = frappe.db.get_value("Item", {"item_name": name}, "name")
+		self.assertEqual(doc.name, created_doc_name)
 
 	def test_create_guest(self):
 		frappe.set_user("Guest")

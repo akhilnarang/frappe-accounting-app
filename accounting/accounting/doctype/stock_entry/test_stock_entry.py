@@ -15,7 +15,6 @@ def create_entry(
     target_warehouse: str | None = None,
 ):
     data = {
-        "doctype": "Stock Entry",
         "entry_type": entry_type,
         "items": items,
     }
@@ -28,7 +27,7 @@ def create_entry(
     if target_warehouse:
         data["target_warehouse"] = target_warehouse
 
-    return frappe.get_doc(data).insert()
+    return frappe.new_doc("Stock Entry", **data).insert()
 
 
 class TestStockEntry(FrappeTestCase):
@@ -43,52 +42,30 @@ class TestStockEntry(FrappeTestCase):
 
         # Create some items
         name = generate_random_string()
-        frappe.get_doc(
-            {
-                "doctype": "Item",
-                "item_name": name,
-            }
-        ).insert()
-        frappe.get_doc(
-            {
-                "doctype": "Item",
-                "item_name": name[::-1],
-            }
-        ).insert()
+        frappe.new_doc("Item", item_name=name).insert()
+        frappe.new_doc("Item", item_name=name[::-1]).insert()
 
         # Create some warehouses
-        frappe.get_doc(
-            {
-                "doctype": "Warehouse",
-                "warehouse_name": self.incoming_warehouse_name,
-                "address": generate_random_string(),
-            }
+        frappe.new_doc(
+            "Warehouse",
+            warehouse_name=self.incoming_warehouse_name,
+            address=generate_random_string(),
         ).insert()
-        frappe.get_doc(
-            {
-                "doctype": "Warehouse",
-                "warehouse_name": self.outgoing_warehouse_name,
-                "address": generate_random_string(),
-            }
+        frappe.new_doc(
+            "Warehouse",
+            warehouse_name=self.outgoing_warehouse_name,
+            address=generate_random_string(),
         ).insert()
-        frappe.get_doc(
-            {
-                "doctype": "Warehouse",
-                "warehouse_name": self.main_warehouse_name,
-                "address": generate_random_string(),
-            }
-        )
+        frappe.new_doc(
+            "Warehouse", warehouse_name=self.main_warehouse_name, address=generate_random_string()
+        ).insert()
 
     def tearDown(self):
         frappe.db.rollback()
 
     def test_create_stock_entry_without_mandatory_fields(self):
         frappe.set_user("Administrator")
-        doc = frappe.get_doc(
-            {
-                "doctype": "Stock Entry",
-            }
-        )
+        doc = frappe.new_doc("Stock Entry")
         with self.assertRaises(frappe.exceptions.ValidationError):
             doc.insert()
 
@@ -108,17 +85,20 @@ class TestStockEntry(FrappeTestCase):
 
         # Test receiving items
         doc = create_entry("Receipt", items, None, self.incoming_warehouse_name)
-        created_stock_entry = frappe.get_doc("Stock Entry", doc.name)
-        self.assertEqual(created_stock_entry.entry_type, "Receipt")
+        created_stock_entry_type = frappe.db.get_value(
+            "Stock Entry", {"name": doc.name}, "entry_type"
+        )
+        self.assertEqual(created_stock_entry_type, "Receipt")
 
         # Check ledger entries
         for item in items:
-            data = frappe.db.get(
+            data = frappe.db.get_value(
                 "Stock Ledger Entry",
                 {
                     "item": item["item"],
                     "warehouse": self.incoming_warehouse_name,
                 },
+                "*",
             )
             self.assertEqual(item["quantity"], data.quantity)
             self.assertEqual(item["rate"], data.rate)
@@ -135,8 +115,10 @@ class TestStockEntry(FrappeTestCase):
             self.incoming_warehouse_name,
             self.outgoing_warehouse_name,
         )
-        created_stock_entry = frappe.get_doc("Stock Entry", doc.name)
-        self.assertEqual(created_stock_entry.entry_type, "Transfer")
+        created_stock_entry_type = frappe.db.get_value(
+            "Stock Entry", {"name": doc.name}, "entry_type"
+        )
+        self.assertEqual(created_stock_entry_type, "Transfer")
 
         for i, item in enumerate(items):
             items[i] = {
@@ -145,8 +127,10 @@ class TestStockEntry(FrappeTestCase):
                 "rate": get_random_integer(100, 1000),
             }
         doc = create_entry("Consume", items, self.outgoing_warehouse_name, None)
-        created_stock_entry = frappe.get_doc("Stock Entry", doc.name)
-        self.assertEqual(created_stock_entry.entry_type, "Consume")
+        created_stock_entry_type = frappe.db.get_value(
+            "Stock Entry", {"name": doc.name}, "entry_type"
+        )
+        self.assertEqual(created_stock_entry_type, "Consume")
 
     def test_create_guest(self):
         frappe.set_user("Guest")

@@ -107,15 +107,13 @@ class StockEntry(Document):
 			item.rate = average_rate
 
 	def insert_ledger(self, item: str, warehouse: str, quantity: int, rate: float):
-		frappe.get_doc(
-			{
-				"doctype": "Stock Ledger Entry",
-				"item": item,
-				"warehouse": warehouse,
-				"entry_time": self.current_time,
-				"quantity": quantity,
-				"rate": rate,
-			}
+		frappe.new_doc(
+			"Stock Ledger Entry",
+			item=item,
+			warehouse=warehouse,
+			entry_time=self.current_time,
+			quantity=quantity,
+			rate=rate,
 		).insert()
 
 	def before_save(self):
