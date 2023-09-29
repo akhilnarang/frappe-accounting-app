@@ -1,0 +1,66 @@
+{
+  "actions": [],
+  "allow_rename": 1,
+  "creation": "2023-09-25 16:32:58.617697",
+  "default_view": "List",
+  "doctype": "DocType",
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "field_order": [
+    "item",
+    "source_warehouse",
+    "target_warehouse",
+    "quantity",
+    "rate"
+  ],
+  "fields": [
+    {
+      "fieldname": "item",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "Item",
+      "options": "Item",
+      "reqd": 1
+    },
+    {
+      "fieldname": "source_warehouse",
+      "fieldtype": "Link",
+      "label": "Source Warehouse",
+      "options": "Warehouse"
+    },
+    {
+      "fieldname": "target_warehouse",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "Target Warehouse",
+      "options": "Warehouse"
+    },
+    {
+      "fieldname": "quantity",
+      "fieldtype": "Float",
+      "in_list_view": 1,
+      "label": "Quantity",
+      "non_negative": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "rate",
+      "fieldtype": "Int",
+      "label": "Rate",
+      "non_negative": 1,
+      "reqd": 1
+    }
+  ],
+  "index_web_pages_for_search": 1,
+  "istable": 1,
+  "links": [],
+  "modified": "2023-09-28 18:31:07.566279",
+  "modified_by": "Administrator",
+  "module": "Accounting",
+  "name": "Stock Entry Item",
+  "owner": "Administrator",
+  "permissions": [],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": []
+}

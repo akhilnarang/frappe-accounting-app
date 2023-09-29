@@ -30,7 +30,7 @@
    "fieldname": "items",
    "fieldtype": "Table",
    "label": "Items",
-   "options": "Stock Entry Table Item",
+   "options": "Stock Entry Item",
    "reqd": 1
   },
   {
@@ -43,7 +43,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-09-28 17:39:40.015304",
+ "modified": "2023-09-29 13:58:29.820707",
  "modified_by": "Administrator",
  "module": "Accounting",
  "name": "Stock Entry",

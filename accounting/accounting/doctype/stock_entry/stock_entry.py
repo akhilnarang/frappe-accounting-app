@@ -13,25 +13,22 @@ class StockEntry(Document):
 	from typing import TYPE_CHECKING
 
 	if TYPE_CHECKING:
-		from accounting.accounting.doctype.stock_entry_table_item.stock_entry_table_item import (
-			StockEntryTableItem,
-		)
+		from accounting.accounting.doctype.stock_entry_item.stock_entry_item import StockEntryItem
 		from frappe.types import DF
 
-		entry_type: DF.Literal["Receipt", "Consume", "Transfer"]
-		items: DF.Table[StockEntryTableItem]
+		entry_type: DF.Literal['Receipt', 'Consume', 'Transfer']
+		items: DF.Table[StockEntryItem]
 		source_warehouse: DF.Link | None
 		target_warehouse: DF.Link | None
-
 	# end: auto-generated types
-	def validate_item_metadata(self, item: "StockEntryTableItem"):
+	def validate_item_metadata(self, item: "StockEntryItem"):
 		if item.quantity <= 0:
 			frappe.throw("Quantity needs to be a positive number")
 
 		if item.rate is None:
 			frappe.throw("Rate is mandatory")
 
-	def validate_receipt(self, item: "StockEntryTableItem"):
+	def validate_receipt(self, item: "StockEntryItem"):
 		if not self.target_warehouse and not item.target_warehouse:
 			frappe.throw("Target Warehouse is mandatory for receipt")
 		elif self.target_warehouse:
@@ -40,7 +37,7 @@ class StockEntry(Document):
 		if self.source_warehouse or item.source_warehouse:
 			frappe.throw("Source Warehouse is not allowed for receipt")
 
-	def validate_consume(self, item: "StockEntryTableItem"):
+	def validate_consume(self, item: "StockEntryItem"):
 		if not item.source_warehouse and not self.source_warehouse:
 			frappe.throw("Source Warehouse is mandatory for consume")
 		elif self.source_warehouse:
@@ -65,7 +62,7 @@ class StockEntry(Document):
 				f"Not enough stock in the warehouse - available: {stock or 0}, requested: {item.quantity}"
 			)
 
-	def validate_transfer(self, item: "StockEntryTableItem"):
+	def validate_transfer(self, item: "StockEntryItem"):
 		if not self.target_warehouse and not item.target_warehouse:
 			frappe.throw("Target Warehouse is mandatory for transfer")
 		elif self.target_warehouse:
