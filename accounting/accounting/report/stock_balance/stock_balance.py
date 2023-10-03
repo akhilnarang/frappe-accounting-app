@@ -5,6 +5,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 import frappe
+from frappe.query_builder import DocType, functions
 from frappe.utils import flt
 
 
@@ -64,122 +65,66 @@ def execute(incoming_filters: dict) -> tuple[list[dict], list[dict]]:
         },
     ]
 
-    # Get a combination of unique item-warehouse pairs from the ledger
-    query_string = """
-        SELECT DISTINCT item, warehouse
-        FROM `tabStock Ledger Entry`
-        WHERE entry_time BETWEEN %(from_date)s AND %(to_date)s
-        """
-
-    query_filters = {
-        "from_date": filters.from_date.isoformat(),
-        "to_date": filters.to_date.isoformat(),
-    }
+    stock_ledger_entry = DocType("Stock Ledger Entry")
+    query = frappe.qb.from_(stock_ledger_entry).distinct().select("item", "warehouse").where(
+        stock_ledger_entry.entry_time.between(filters.from_date, filters.to_date)
+    )
 
     if filters.item:
-        query_string += " AND item = %(item)s"
-        query_filters["item"] = filters.item
+        query = query.where(stock_ledger_entry.item == filters.item)
 
     if filters.warehouse:
-        query_string += " AND warehouse = %(warehouse)s"
-        query_filters["warehouse"] = filters.warehouse
+        query = query.where(stock_ledger_entry.warehouse == filters.warehouse)
 
     response: list[dict] = []
 
-    item_warehouse_pairs: list[dict] = frappe.db.sql(query_string, query_filters, as_dict=True)
+    item_warehouse_pairs: list[dict] = query.run(as_dict=True)
     for entry in item_warehouse_pairs:
         # Get opening stock
-        if opening_stock := frappe.db.sql(
-            """
-            SELECT SUM(quantity) AS result
-            FROM `tabStock Ledger Entry`
-            WHERE entry_time < %(from_date)s
-            AND item = %(item)s
-            AND warehouse = %(warehouse)s
-            """,
-            {
-                "from_date": filters.from_date.isoformat(),
-                "item": entry["item"],
-                "warehouse": entry["warehouse"],
-            },
-            as_dict=True,
-        ):
+        if opening_stock := (frappe.qb.from_(stock_ledger_entry)
+            .select(functions.Sum(stock_ledger_entry.quantity, "result"))
+            .where(stock_ledger_entry.entry_time < filters.from_date)
+            .where(stock_ledger_entry.item == entry["item"])
+            .where(stock_ledger_entry.warehouse == entry["warehouse"])
+            .run(as_dict=True)):
             opening_stock = opening_stock[0].get("result", 0)
 
         # Get incoming stock
-        if incoming_stock := frappe.db.sql(
-            """
-            SELECT SUM(quantity) AS result
-            FROM `tabStock Ledger Entry`
-            WHERE entry_time BETWEEN %(from_date)s AND %(to_date)s
-            AND item = %(item)s
-            AND warehouse = %(warehouse)s
-            AND quantity > 0
-            """,
-            {
-                "from_date": filters.from_date.isoformat(),
-                "to_date": filters.to_date.isoformat(),
-                "item": entry["item"],
-                "warehouse": entry["warehouse"],
-            },
-            as_dict=True,
-        ):
+        if incoming_stock := (frappe.qb.from_(stock_ledger_entry)
+            .select(functions.Sum(stock_ledger_entry.quantity, "result"))
+            .where(stock_ledger_entry.entry_time[filters.from_date:filters.to_date])
+            .where(stock_ledger_entry.item == entry["item"])
+            .where(stock_ledger_entry.warehouse == entry["warehouse"])
+            .run(as_dict=True)):
             incoming_stock = incoming_stock[0].get("result", 0)
 
         # Get outgoing stock
-        if outgoing_stock := frappe.db.sql(
-            """
-            SELECT SUM(quantity) AS result
-            FROM `tabStock Ledger Entry`
-            WHERE entry_time BETWEEN %(from_date)s AND %(to_date)s
-            AND item = %(item)s
-            AND warehouse = %(warehouse)s
-            AND quantity < 0
-            """,
-            {
-                "from_date": filters.from_date.isoformat(),
-                "to_date": filters.to_date.isoformat(),
-                "item": entry["item"],
-                "warehouse": entry["warehouse"],
-            },
-            as_dict=True,
+        if outgoing_stock := (frappe.qb.from_(stock_ledger_entry)
+            .select(functions.Sum(stock_ledger_entry.quantity, "result"))
+            .where(stock_ledger_entry.entry_time[filters.from_date:filters.to_date])
+            .where(stock_ledger_entry.item == entry["item"])
+            .where(stock_ledger_entry.warehouse == entry["warehouse"])
+            .run(as_dict=True)
         ):
             outgoing_stock = outgoing_stock[0].get("result", 0)
 
         # Get closing stock
-        if closing_stock := frappe.db.sql(
-            """
-                SELECT SUM(quantity) AS result
-                FROM `tabStock Ledger Entry`
-                WHERE entry_time <= %(to_date)s
-                AND item = %(item)s
-                AND warehouse = %(warehouse)s
-                """,
-            {
-                "to_date": filters.to_date.isoformat(),
-                "item": entry["item"],
-                "warehouse": entry["warehouse"],
-            },
-            as_dict=True,
+        if closing_stock := (frappe.qb.from_(stock_ledger_entry)
+            .select(functions.Sum(stock_ledger_entry.quantity, "result"))
+            .where(stock_ledger_entry.entry_time <= filters.to_date)
+            .where(stock_ledger_entry.item == entry["item"])
+            .where(stock_ledger_entry.warehouse == entry["warehouse"])
+            .run(as_dict=True)
         ):
             closing_stock = closing_stock[0].get("result", 0)
 
         # Get valuation rate
-        if valuation_rate := frappe.db.sql(
-            """
-            SELECT AVG(rate) AS result
-            FROM `tabStock Ledger Entry`
-            WHERE entry_time between %(from_date)s AND %(to_date)s
-            AND item = %(item)s
-            AND warehouse = %(warehouse)s
-            """,
-            {
-                "from_date": filters.from_date.isoformat(),
-                "to_date": filters.to_date.isoformat(),
-                "item": entry["item"],
-                "warehouse": entry["warehouse"],
-            },
-            as_dict=True,
+        if valuation_rate := (frappe.qb.from_(stock_ledger_entry)
+            .select(functions.Avg(stock_ledger_entry.rate, "result"))
+            .where(stock_ledger_entry.entry_time[filters.from_date:filters.to_date])
+            .where(stock_ledger_entry.item == entry["item"])
+            .where(stock_ledger_entry.warehouse == entry["warehouse"])
+            .run(as_dict=True)
         ):
             valuation_rate = valuation_rate[0].get("result", 0)
 
