@@ -60,9 +60,6 @@ class TestStockEntry(FrappeTestCase):
             "Warehouse", warehouse_name=self.main_warehouse_name, address=generate_random_string()
         ).insert()
 
-    def tearDown(self):
-        frappe.db.rollback()
-
     def test_create_stock_entry_without_mandatory_fields(self):
         frappe.set_user("Administrator")
         doc = frappe.new_doc("Stock Entry")
