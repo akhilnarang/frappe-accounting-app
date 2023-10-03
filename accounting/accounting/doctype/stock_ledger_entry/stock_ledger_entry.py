@@ -18,6 +18,8 @@ class StockLedgerEntry(Document):
 		item: DF.Link
 		quantity: DF.Float
 		rate: DF.Int
+		source: DF.DynamicLink
+		type: DF.Link
 		warehouse: DF.Link
 	# end: auto-generated types
 	pass

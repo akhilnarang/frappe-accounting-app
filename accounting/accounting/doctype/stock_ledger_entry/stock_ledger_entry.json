@@ -11,7 +11,9 @@
   "warehouse",
   "entry_time",
   "quantity",
-  "rate"
+  "rate",
+  "type",
+  "source"
  ],
  "fields": [
   {
@@ -50,11 +52,26 @@
    "label": "Rate",
    "non_negative": 1,
    "reqd": 1
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Link",
+   "label": "Type",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fetch_from": ".",
+   "fieldname": "source",
+   "fieldtype": "Dynamic Link",
+   "label": "Source",
+   "options": "type",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-09-29 11:40:03.305798",
+ "modified": "2023-10-03 19:51:54.698204",
  "modified_by": "Administrator",
  "module": "Accounting",
  "name": "Stock Ledger Entry",

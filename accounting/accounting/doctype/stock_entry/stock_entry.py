@@ -16,10 +16,12 @@ class StockEntry(Document):
 		from accounting.accounting.doctype.stock_entry_item.stock_entry_item import StockEntryItem
 		from frappe.types import DF
 
+		amended_from: DF.Link | None
 		entry_type: DF.Literal['Receipt', 'Consume', 'Transfer']
 		items: DF.Table[StockEntryItem]
 		source_warehouse: DF.Link | None
 		target_warehouse: DF.Link | None
+
 	# end: auto-generated types
 	def validate_item_metadata(self, item: "StockEntryItem"):
 		if item.quantity <= 0:
@@ -111,6 +113,8 @@ class StockEntry(Document):
 			entry_time=self.current_time,
 			quantity=quantity,
 			rate=rate,
+			type="Stock Entry",
+			source=self.name,
 		).insert()
 
 	def before_save(self):
@@ -120,15 +124,25 @@ class StockEntry(Document):
 				for item in self.items:
 					self.validate_item_metadata(item)
 					self.validate_receipt(item)
-					self.insert_ledger(item.item, item.target_warehouse, item.quantity, item.rate)
 			case "Consume":
 				for item in self.items:
 					self.validate_item_metadata(item)
 					self.validate_consume(item)
-					self.insert_ledger(item.item, item.source_warehouse, -item.quantity, item.rate)
 			case "Transfer":
 				for item in self.items:
 					self.validate_item_metadata(item)
 					self.validate_transfer(item)
+
+	def on_submit(self):
+		self.current_time = frappe.utils.now_datetime()
+		match self.entry_type:
+			case "Receipt":
+				for item in self.items:
+					self.insert_ledger(item.item, item.target_warehouse, item.quantity, item.rate)
+			case "Consume":
+				for item in self.items:
+					self.insert_ledger(item.item, item.source_warehouse, -item.quantity, item.rate)
+			case "Transfer":
+				for item in self.items:
 					self.insert_ledger(item.item, item.source_warehouse, -item.quantity, item.rate)
 					self.insert_ledger(item.item, item.target_warehouse, item.quantity, item.rate)
