@@ -27,7 +27,7 @@ def create_entry(
     if target_warehouse:
         data["target_warehouse"] = target_warehouse
 
-    return frappe.new_doc("Stock Entry", **data).insert()
+    return frappe.new_doc("Stock Entry", **data).insert().submit()
 
 
 class TestStockEntry(FrappeTestCase):
