@@ -1,9 +1,20 @@
 # Copyright (c) 2023, Akhil and contributors
 # For license information, please see license.txt
+import itertools
+from typing import Callable
+
+from pydantic import BaseModel
 
 import frappe
 from frappe import cint
 from frappe.model.document import Document
+
+
+class LedgerEntry(BaseModel):
+	item: str
+	warehouse: str
+	quantity: float
+	rate: float
 
 
 class StockEntry(Document):
@@ -104,58 +115,136 @@ class StockEntry(Document):
 		):
 			item.rate = average_rate
 
-	def insert_ledger(self, item: str, warehouse: str, quantity: int, rate: float):
-		frappe.new_doc(
-			"Stock Ledger Entry",
-			item=item,
-			warehouse=warehouse,
-			entry_time=self.current_time,
-			quantity=quantity,
-			rate=rate,
-			type="Stock Entry",
-			source=self.name,
-		).insert()
+	def insert_ledger(self, items: list[LedgerEntry]):
+		for row in items:
+			frappe.new_doc(
+				"Stock Ledger Entry",
+				item=row.item,
+				warehouse=row.warehouse,
+				entry_time=self.current_time,
+				quantity=row.quantity,
+				rate=row.rate,
+				type="Stock Entry",
+				source=self.name,
+			).insert()
+
+	def handle_invalid_entry_type(self, _):
+		frappe.throw(f"Invalid Entry Type: {self.entry_type}")
 
 	def before_save(self):
 		self.current_time = frappe.utils.now_datetime()
+		validation_func: Callable[["StockEntryItem"], None] = self.handle_invalid_entry_type
 		match self.entry_type:
 			case "Receipt":
-				for item in self.items:
-					self.validate_item_metadata(item)
-					self.validate_receipt(item)
+				validation_func = self.validate_receipt
 			case "Consume":
-				for item in self.items:
-					self.validate_item_metadata(item)
-					self.validate_consume(item)
+				validation_func = self.validate_consume
 			case "Transfer":
-				for item in self.items:
-					self.validate_item_metadata(item)
-					self.validate_transfer(item)
+				validation_func = self.validate_transfer
+
+		for item in self.items:
+			self.validate_item_metadata(item)
+			validation_func(item)
 
 	def on_submit(self):
 		self.current_time = frappe.utils.now_datetime()
+		items: list[LedgerEntry] = []
 		match self.entry_type:
 			case "Receipt":
-				for item in self.items:
-					self.insert_ledger(item.item, item.target_warehouse, item.quantity, item.rate)
+				items.extend(
+					[
+						LedgerEntry(
+							item=item.item,
+							warehouse=item.target_warehouse,
+							quantity=item.quantity,
+							rate=item.rate
+						)
+						for item in self.items
+					]
+				)
 			case "Consume":
-				for item in self.items:
-					self.insert_ledger(item.item, item.source_warehouse, -item.quantity, item.rate)
+				items.extend(
+					[
+						LedgerEntry(
+							item=item.item,
+							warehouse=item.source_warehouse,
+							quantity=-item.quantity,
+							rate=item.rate
+						)
+						for item in self.items
+					]
+				)
 			case "Transfer":
-				for item in self.items:
-					self.insert_ledger(item.item, item.source_warehouse, -item.quantity, item.rate)
-					self.insert_ledger(item.item, item.target_warehouse, item.quantity, item.rate)
+				items.extend(
+					itertools.chain.from_iterable(
+						(
+							LedgerEntry(
+								item=item.item,
+								warehouse=item.source_warehouse,
+								quantity=-item.quantity,
+								rate=item.rate
+							),
+							LedgerEntry(
+								item=item.item,
+								warehouse=item.target_warehouse,
+								quantity=item.quantity,
+								rate=item.rate
+							)
+						)
+						for item in self.items
+					)
+				)
+
+		self.insert_ledger(items)
 
 	def on_cancel(self):
 		self.current_time = frappe.utils.now_datetime()
+		items: list[LedgerEntry] = []
+
 		match self.entry_type:
 			case "Receipt":
-				for item in self.items:
-					self.insert_ledger(item.item, item.target_warehouse, -item.quantity, item.rate)
+				items.extend(
+					[
+						LedgerEntry(
+							item=item.item,
+							warehouse=item.target_warehouse,
+							quantity=-item.quantity,
+							rate=item.rate
+						)
+						for item in self.items
+					]
+				)
 			case "Consume":
-				for item in self.items:
-					self.insert_ledger(item.item, item.source_warehouse, item.quantity, item.rate)
+				items.extend(
+					[
+						LedgerEntry(
+							item=item.item,
+							warehouse=item.source_warehouse,
+							quantity=item.quantity,
+							rate=item.rate
+						)
+						for item in self.items
+					]
+				)
 			case "Transfer":
-				for item in self.items:
-					self.insert_ledger(item.item, item.source_warehouse, item.quantity, item.rate)
-					self.insert_ledger(item.item, item.target_warehouse, -item.quantity, item.rate)
+				items.extend(
+					itertools.chain.from_iterable(
+						(
+							LedgerEntry(
+								item=item.item,
+								warehouse=item.source_warehouse,
+								quantity=item.quantity,
+								rate=item.rate
+							),
+							LedgerEntry(
+								item=item.item,
+								warehouse=item.target_warehouse,
+								quantity=-item.quantity,
+								rate=item.rate
+							)
+						)
+						for item in self.items
+					)
+				)
+
+		self.insert_ledger(items)
