@@ -146,3 +146,17 @@ class StockEntry(Document):
 				for item in self.items:
 					self.insert_ledger(item.item, item.source_warehouse, -item.quantity, item.rate)
 					self.insert_ledger(item.item, item.target_warehouse, item.quantity, item.rate)
+
+	def on_cancel(self):
+		self.current_time = frappe.utils.now_datetime()
+		match self.entry_type:
+			case "Receipt":
+				for item in self.items:
+					self.insert_ledger(item.item, item.target_warehouse, -item.quantity, item.rate)
+			case "Consume":
+				for item in self.items:
+					self.insert_ledger(item.item, item.source_warehouse, item.quantity, item.rate)
+			case "Transfer":
+				for item in self.items:
+					self.insert_ledger(item.item, item.source_warehouse, item.quantity, item.rate)
+					self.insert_ledger(item.item, item.target_warehouse, -item.quantity, item.rate)
