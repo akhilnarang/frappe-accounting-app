@@ -19,9 +19,8 @@ class StockEntry(Document):
 		amended_from: DF.Link | None
 		entry_type: DF.Literal['Receipt', 'Consume', 'Transfer']
 		items: DF.Table[StockEntryItem]
-		source_warehouse: DF.Link | None
-		target_warehouse: DF.Link | None
-
+		source_warehouse: DF.Link
+		target_warehouse: DF.Link
 	# end: auto-generated types
 	def validate_item_metadata(self, item: "StockEntryItem"):
 		if item.quantity <= 0:
